@@ -44,6 +44,6 @@ def get_data(mode="numpy", shape=(3, 4, 256, 256)):
         return x_data, properties
     else:
         raise ValueError(
-            f"Invalid mode argument. Found {mode=}. Valid modes are "
+            f"Invalid mode argument. Found mode={mode}. Valid modes are "
             '"numpy", "dask", "xarray_numpy", "xarray_dask"'
         )
