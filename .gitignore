@@ -106,3 +106,4 @@ ENV/
 
 
 _version.py
+*.swp
