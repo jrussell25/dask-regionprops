@@ -82,7 +82,8 @@ def _get_loop_sizes(labels, core_dims):
     if isinstance(labels, xr.DataArray):
         if core_dims is None:
             loop_sizes = {
-                labels.dims[i]: labels.sizes[labels.dims[i]] for i in (-2, -1)
+                labels.dims[i]: labels.sizes[labels.dims[i]]
+                for i in range(labels.ndim - 2)
             }
         elif isinstance(core_dims[0], str):
             loop_dims = set(labels.dims) - set(core_dims)
