@@ -31,11 +31,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools tox tox-gh-actions
 
-      - name: Test with tox
-        run: tox
-        env:
-          PLATFORM: ${{ matrix.platform }}
-
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/setup.cfg') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-
+      - name: Install
+        run: |
+          pip install wheel pytest-cov
+          pip install -e ".[testing]"
+      - name: Tests
+        run: pytest -v --color=yes --cov=dask_regionprops --cov-report=xml
       - name: Coverage
         if: runner.os == 'Linux'
         uses: codecov/codecov-action@v1
