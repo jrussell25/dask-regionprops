@@ -36,12 +36,14 @@ def get_data(mode="numpy", shape=(3, 4, 256, 256)):
 
     elif mode == "xarray_numpy":
         x_data = xr.DataArray(data, dims=list("STYX"))
-        return x_data, properties
+        x_properties = properties.rename({"dim-0": "S", "dim-1": "T"}, axis=1)
+        return x_data, x_properties
 
     elif mode == "xarray_dask":
         d_data = da.from_array(data)
         x_data = xr.DataArray(d_data, dims=list("STYX"))
-        return x_data, properties
+        x_properties = properties.rename({"dim-0": "S", "dim-1": "T"}, axis=1)
+        return x_data, x_properties
     else:
         raise ValueError(
             f"Invalid mode argument. Found mode={mode}. Valid modes are "
