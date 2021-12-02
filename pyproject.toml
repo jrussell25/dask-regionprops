@@ -18,8 +18,6 @@ addopts = [
     "--doctest-continue-on-failure",
     "--doctest-modules",
     "--ignore-glob=docs/examples/*.py",
-    "--mpl",
-    "--nbval",
 ]
 
 [tool.mypy]
