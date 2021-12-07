@@ -6,6 +6,7 @@ import pandas as pd
 import xarray as xr
 from skimage.draw import random_shapes
 from skimage.measure import regionprops_table
+from skimage.segmentation import relabel_sequential
 
 
 def get_data(mode="numpy", shape=(3, 4, 256, 256)):
@@ -49,3 +50,16 @@ def get_data(mode="numpy", shape=(3, 4, 256, 256)):
             f"Invalid mode argument. Found mode={mode}. Valid modes are "
             '"numpy", "dask", "xarray_numpy", "xarray_dask"'
         )
+
+
+def random_labels(shape, max_shapes=20, min_shapes=10, min_size=20):
+    labels = random_shapes(
+        shape,
+        max_shapes=max_shapes,
+        min_shapes=min_shapes,
+        min_size=min_size,
+        multichannel=False,
+    )[0]
+    labels[labels == 255] = 0
+    labels = relabel_sequential(labels)[0]
+    return labels

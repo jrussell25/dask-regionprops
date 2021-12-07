@@ -4,9 +4,11 @@ __all__ = [
 ]
 
 import os
+import re
 from itertools import product
 
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 import xarray as xr
 from dask import delayed
@@ -27,6 +29,19 @@ DEFAULT_PROPERTIES = (
     "solidity",
     "moments_hu",
 )
+
+DEFAULT_META = pd.DataFrame(
+    regionprops_table(np.zeros((1, 1), dtype="uint8"), properties=DEFAULT_PROPERTIES)
+)
+
+DEFAULT_PROPS_TO_COLS = {}
+for prop in DEFAULT_PROPERTIES:
+    col_list = []
+    for c in DEFAULT_META.columns:
+        stripped = re.sub("[-0-9]", "", c)
+        if stripped == prop:
+            col_list.append(c)
+    DEFAULT_PROPS_TO_COLS[prop] = col_list
 
 
 def regionprops_df(
@@ -60,6 +75,8 @@ def regionprops(labels, intensity=None, properties=DEFAULT_PROPERTIES, core_dims
 
     loop_sizes = _get_loop_sizes(labels, core_dims)
 
+    meta = _get_meta(loop_sizes, properties)
+
     labels_arr, intensity_arr = _get_arrays(labels, intensity)
 
     all_props = []
@@ -72,9 +89,21 @@ def regionprops(labels, intensity=None, properties=DEFAULT_PROPERTIES, core_dims
         )
         all_props.append(frame_props)
 
-    cell_props = dd.from_delayed(all_props, meta=all_props[0].compute())
+    cell_props = dd.from_delayed(all_props, meta=meta)
+
     cell_props = cell_props.repartition(os.cpu_count() // 2)
     return cell_props
+
+
+def _get_meta(loop_sizes, properties):
+
+    meta = pd.DataFrame()
+    for prop in properties:
+        meta = meta.join(DEFAULT_META[DEFAULT_PROPS_TO_COLS[prop]])
+
+    other_cols = pd.DataFrame(columns=list(loop_sizes.keys()), dtype=int)
+
+    return meta.join(other_cols)
 
 
 def _get_loop_sizes(labels, core_dims):
