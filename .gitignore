@@ -107,3 +107,5 @@ ENV/
 
 _version.py
 *.swp
+
+dask-worker-space/
