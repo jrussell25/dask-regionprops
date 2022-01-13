@@ -33,7 +33,7 @@ from dask_regionprops import regionprops
 
 # Assume data is a numpy/dask array that has dims corresponding to (S,T,Y,X)
 props = regionprops(data)
-single_cell_props = props.loc[(props["dim-0"]==2)&(props["dim-1"]==5)]
+single_cell_props = props.loc[(props["dim-0"]==2)&(props["label"]==5)]
 ```
 
 If you are a more advanced pandas user, and you want to do this sort of analysis for many cells,
@@ -41,10 +41,10 @@ you might consider using the leading dimensions and region labels as a `multiind
 access the data in this way.
 
 Finally, a useful downstream application is to use the region properties as features for a classifer
-or maybe even a clustering algorithm. I have personally input labelled images and fluorescence images
-to classify what stage of the cell cycle different cells are in.
-
+or maybe even a clustering algorithm. I have personally input labelled regions and the corresponding 
+fluorescence images to identify progression through the cell cycle.
 
 ## Contributions
 
 Please feel free to open an issue or pull-request if you have questions or improvements for this library.
+
