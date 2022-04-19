@@ -3,7 +3,6 @@ __all__ = [
     "regionprops_df",
 ]
 
-import os
 import re
 from itertools import product
 
@@ -30,12 +29,25 @@ DEFAULT_PROPERTIES = (
     "moments_hu",
 )
 
+DEFAULT_WEIGHTED_PROPERTIES = (
+    *DEFAULT_PROPERTIES,
+    "centroid_weighted",
+    "intensity_max",
+    "intensity_mean",
+    "intensity_min",
+    "moments_weighted_hu",
+)
+
 DEFAULT_META = pd.DataFrame(
-    regionprops_table(np.zeros((1, 1), dtype="uint8"), properties=DEFAULT_PROPERTIES)
+    regionprops_table(
+        label_image=np.ones((1, 1), dtype="uint8"),
+        intensity_image=np.ones((1, 1)),
+        properties=DEFAULT_WEIGHTED_PROPERTIES,
+    )
 )
 
 DEFAULT_PROPS_TO_COLS = {}
-for prop in DEFAULT_PROPERTIES:
+for prop in DEFAULT_WEIGHTED_PROPERTIES:
     col_list = []
     for c in DEFAULT_META.columns:
         stripped = re.sub("[-0-9]", "", c)
@@ -68,12 +80,26 @@ def regionprops(labels, intensity=None, properties=DEFAULT_PROPERTIES, core_dims
     properties : str, tuple[str] default "non-image"
         Properties to compute for each region. Can pass an explicit tuple
         directly to regionprops or use one of the followings shortcuts:
-        "minimal", "non-image", "all".
+        "minimal", "non-image", "all". If provided an intensity image, basic
+        weighted properties will also be computed by defualt.
+    core_dims : tuple[int] or tuple[str] default None
+        Dimensions of input arrays that correspond to spatial (xy) dimensions of each
+        image. If None, it is assumed that the final two dimensions are the
+        spatial dimensions.
+
+    Returns
+    -------
+    regionprops_df : dask.DataFrame
+        Lazily constructed dataframe containing columns for each specifified
+        property.
     """
 
     d_regionprops = delayed(regionprops_df)
 
     loop_sizes = _get_loop_sizes(labels, core_dims)
+
+    if intensity is not None:
+        properties = DEFAULT_WEIGHTED_PROPERTIES
 
     meta = _get_meta(loop_sizes, properties)
 
@@ -84,14 +110,19 @@ def regionprops(labels, intensity=None, properties=DEFAULT_PROPERTIES, core_dims
     for dims in product(*(range(v) for v in loop_sizes.values())):
         other_cols = dict(zip(loop_sizes.keys(), dims))
 
-        frame_props = d_regionprops(
-            labels_arr[dims], intensity_arr, properties, other_cols
-        )
+        if intensity_arr is not None:
+            frame_props = d_regionprops(
+                labels_arr[dims], intensity_arr[dims], properties, other_cols
+            )
+        else:
+            frame_props = d_regionprops(
+                labels_arr[dims], intensity_arr[dims], properties, other_cols
+            )
+
         all_props.append(frame_props)
 
     cell_props = dd.from_delayed(all_props, meta=meta)
 
-    cell_props = cell_props.repartition(os.cpu_count() // 2)
     return cell_props
 
 
