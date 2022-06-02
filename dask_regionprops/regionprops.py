@@ -116,7 +116,7 @@ def regionprops(labels, intensity=None, properties=DEFAULT_PROPERTIES, core_dims
             )
         else:
             frame_props = d_regionprops(
-                labels_arr[dims], intensity_arr[dims], properties, other_cols
+                labels_arr[dims], None, properties, other_cols
             )
 
         all_props.append(frame_props)
