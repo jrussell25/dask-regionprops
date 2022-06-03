@@ -7,8 +7,9 @@ Compute region properties using dask delayed and dataframe
 ## Basic Usage
 
 ```python
-# a basic usage example can go here
-print(1+1)
+from dask_regionprops import regionprops
+
+properties = regionprops(data)
 ```
 
 ## Install
