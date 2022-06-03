@@ -4,7 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/dask-regionprops.svg?color=green)](https://pypi.org/project/dask-regionprops)
 [![Python Version](https://img.shields.io/pypi/pyversions/dask-regionprops.svg?color=green)](https://python.org)
 [![CI](https://github.com/jrussell25/dask-regionprops/actions/workflows/ci.yml/badge.svg)](https://github.com/jrussell25/dask-regionprops/actions)
-[![codecov](https://codecov.io/gh/jrussell25/dask-regionprops/branch/master/graph/badge.svg)](https://codecov.io/gh/jrussell25/dask-regionprops)
+[![codecov](https://codecov.io/gh/jrussell25/dask-regionprops/branch/main/graph/badge.svg)](https://codecov.io/gh/jrussell25/dask-regionprops)
 
 ## About
 
@@ -41,10 +41,9 @@ you might consider using the leading dimensions and region labels as a `multiind
 access the data in this way.
 
 Finally, a useful downstream application is to use the region properties as features for a classifer
-or maybe even a clustering algorithm. I have personally input labelled regions and the corresponding 
+or maybe even a clustering algorithm. I have personally input labelled regions and the corresponding
 fluorescence images to identify progression through the cell cycle.
 
 ## Contributions
 
 Please feel free to open an issue or pull-request if you have questions or improvements for this library.
-
