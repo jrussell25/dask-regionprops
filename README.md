@@ -19,6 +19,20 @@ the `scikit-image` regionprops implementation.
    dimenions contain the images and the leading dimensions will be looped over.
 1. In the ND case, the result dataframe will have columns that map each label
 
+## Install
+
+```
+pip install dask-regionprops
+```
+
+## Basic Usage
+You can use regionprops as a nearly drop-in replacement for scikit-image's regionprops. 
+
+```python
+from dask_regionprops import regionprops
+
+props = regionprops(data)
+```
 
 ## Intended Use Case
 
@@ -28,11 +42,7 @@ so for all of the time-points in position `S`, the region labelled `r` should re
 motivated the decision to return the leading dimensions in the dataframe. For instance if you want to get the properties
 of a cell 5 in position 2 you could do something like:
 
-```
-from dask_regionprops import regionprops
-
-# Assume data is a numpy/dask array that has dims corresponding to (S,T,Y,X)
-props = regionprops(data)
+```python
 single_cell_props = props.loc[(props["dim-0"]==2)&(props["label"]==5)]
 ```
 
