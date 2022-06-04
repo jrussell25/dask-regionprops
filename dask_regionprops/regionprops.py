@@ -5,6 +5,7 @@ __all__ = [
 
 import re
 from itertools import product
+from typing import Optional, Union
 
 import dask.dataframe as dd
 import numpy as np
@@ -12,6 +13,8 @@ import pandas as pd
 import xarray as xr
 from dask import delayed
 from skimage.measure import regionprops_table
+
+from .types import ArrayLike
 
 DEFAULT_PROPERTIES = (
     "label",
@@ -27,6 +30,7 @@ DEFAULT_PROPERTIES = (
     "perimeter_crofton",
     "solidity",
     "moments_hu",
+    "moments",
 )
 
 DEFAULT_WEIGHTED_PROPERTIES = (
@@ -35,6 +39,7 @@ DEFAULT_WEIGHTED_PROPERTIES = (
     "intensity_max",
     "intensity_mean",
     "intensity_min",
+    "moments_weighted",
     "moments_weighted_hu",
 )
 
@@ -57,22 +62,53 @@ for prop in DEFAULT_WEIGHTED_PROPERTIES:
 
 
 def regionprops_df(
-    labels_im, intensity_im=None, props=DEFAULT_PROPERTIES, other_cols={}
-):
-    df = pd.DataFrame(regionprops_table(labels_im, intensity_im, properties=props))
+    labels: ArrayLike,
+    intensity: Optional[ArrayLike] = None,
+    properties: tuple[str, ...] = DEFAULT_PROPERTIES,
+    other_cols: dict[str, float] = {},
+) -> pd.DataFrame:
+    """
+    Lightly wrap skimage.measure.regionprops_table to return a DataFrame.
+    Also allow for the addition of extra columns, used in reginprops to track
+    non core dimensions of input.
+
+    Parameters
+    ----------
+    labels : types.ArrayLike
+        Array containing labelled regions. Background is assumed to have
+        value 0 and will be ignored.
+    intensity : Optional[types.ArrayLike] Default None
+        Optional intensity field to compute weighted region properties from.
+    properties : tuple[str]
+        Properties to compute for each region. By default compute all
+        properties that return fixed size outputs. If provided an intensity image,
+        corresponding weighted properties will also be computed by defualt.
+
+    Returns
+    -------
+    properties : pd.DataFrame
+        Dataframe containing the desired properties as columns and each
+        labelled region as a row.
+    """
+    df = pd.DataFrame(regionprops_table(labels, intensity, properties=properties))
     for k, v in other_cols.items():
         df[k] = v
     return df
 
 
-def regionprops(labels, intensity=None, properties=DEFAULT_PROPERTIES, core_dims=None):
+def regionprops(
+    labels: ArrayLike,
+    intensity: Optional[ArrayLike] = None,
+    properties: tuple[str, ...] = DEFAULT_PROPERTIES,
+    core_dims: Optional[tuple[Union[int, str], ...]] = None,
+) -> dd.DataFrame:
     """
     Loop over the frames of ds and compute the regionprops for
     each labelled image in each frame.
 
     Parameters
     ----------
-    labels : array-like of int
+    labels : types.ArrayLike
         Array containing labelled regions. Background is assumed to have
         value 0 and will be ignored.
     intensity : array-like or None, Default None
@@ -115,13 +151,13 @@ def regionprops(labels, intensity=None, properties=DEFAULT_PROPERTIES, core_dims
                 labels_arr[dims], intensity_arr[dims], properties, other_cols
             )
         else:
-            frame_props = d_regionprops(
-                labels_arr[dims], None, properties, other_cols
-            )
+            frame_props = d_regionprops(labels_arr[dims], None, properties, other_cols)
 
         all_props.append(frame_props)
 
-    cell_props = dd.from_delayed(all_props, meta=meta)
+    divisions = range(np.prod(tuple(loop_sizes.values())) + 1)
+
+    cell_props = dd.from_delayed(all_props, meta=meta, divisions=divisions)
 
     return cell_props
 
