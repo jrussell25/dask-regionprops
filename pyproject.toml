@@ -26,8 +26,7 @@ warn_unused_configs = true
 warn_unused_ignores = true
 check_untyped_defs = true
 implicit_reexport = false
-# this is strict!
-# disallow_untyped_defs = true
+disallow_untyped_defs = true
 show_column_numbers = true
 show_error_codes = true
 ignore_missing_imports = true
