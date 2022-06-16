@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from skimage.draw import random_shapes
 from skimage.measure import label

@@ -1,11 +1,7 @@
-__all__ = [
-    "regionprops",
-    "regionprops_df",
-]
+from __future__ import annotations
 
 import re
 from itertools import product
-from typing import Optional, Union
 
 import dask.dataframe as dd
 import numpy as np
@@ -15,6 +11,11 @@ from dask import delayed
 from skimage.measure import regionprops_table
 
 from .types import ArrayLike
+
+__all__ = [
+    "regionprops",
+    "regionprops_df",
+]
 
 DEFAULT_PROPERTIES = (
     "label",
@@ -63,7 +64,7 @@ for prop in DEFAULT_WEIGHTED_PROPERTIES:
 
 def regionprops_df(
     labels: ArrayLike,
-    intensity: Optional[ArrayLike] = None,
+    intensity: ArrayLike | None = None,
     properties: tuple[str, ...] = DEFAULT_PROPERTIES,
     other_cols: dict[str, float] = {},
 ) -> pd.DataFrame:
@@ -98,9 +99,9 @@ def regionprops_df(
 
 def regionprops(
     labels: ArrayLike,
-    intensity: Optional[ArrayLike] = None,
+    intensity: ArrayLike | None = None,
     properties: tuple[str, ...] = DEFAULT_PROPERTIES,
-    core_dims: Optional[tuple[Union[int, str], ...]] = None,
+    core_dims: tuple[int | str, ...] | None = None,
 ) -> dd.DataFrame:
     """
     Loop over the frames of ds and compute the regionprops for
