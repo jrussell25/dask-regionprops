@@ -109,3 +109,4 @@ _version.py
 *.swp
 
 dask-worker-space/
+tmp/
